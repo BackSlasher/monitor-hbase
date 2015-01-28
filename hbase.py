@@ -12,7 +12,7 @@ hbase_cluster_name=None
 hbase_server_name=None
 
 def get_json(path,port):
-  return json.loads(urllib2.urlopen(("http://%s:%s/%s" % (hbase_region_host,port,path))).read())
+  return json.loads(urllib2.urlopen(("http://%s:%s/%s" % (hbase_host,port,path))).read())
 
 
 def region_data():
@@ -73,8 +73,8 @@ def config(cluster_name,server_name=os.popen('hostname -f').read().rstrip(),hbas
   hbase_region_port=region_port
   global hbase_master_port
   hbase_master_port=master_port
-  global hbase_region_host
-  hbase_region_host=hbase_hostname
+  global hbase_host
+  hbase_host=hbase_hostname
   global hbase_cluster_name
   hbase_cluster_name=cluster_name
   global hbase_server_name
