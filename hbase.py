@@ -5,18 +5,19 @@ import json
 import urllib2
 
 
-hbase_region_port=60030
-hbase_region_host='hb2.dynamicyield.com'
-hbase_cluster_name='production'
-hbase_server_name=os.popen('hostname -f').read().rstrip()
+hbase_region_port=None
+hbase_master_port=None
+hbase_host=None
+hbase_cluster_name=None
+hbase_server_name=None
 
-def get_json(path):
-  return json.loads(urllib2.urlopen(("http://%s:%s/%s" % (hbase_region_host,hbase_region_port,path))).read())
+def get_json(path,port):
+  return json.loads(urllib2.urlopen(("http://%s:%s/%s" % (hbase_region_host,port,path))).read())
 
 
 def region_data():
-  jmx=get_json("jmx")
-  tasks=get_json("rs-status?format=json")
+  jmx=get_json("jmx",port=hbase_region_port)
+  tasks=get_json("rs-status?format=json",port=hbase_region_port)
   server_bean=filter(lambda x: x['name']=='hadoop:service=RegionServer,name=RegionServerStatistics', jmx['beans'])[0];
   # TODO remove?
   region_bean=filter(lambda x: x['name']=='hadoop:service=RegionServer,name=RegionServerDynamicStatistics', jmx['beans'])[0];
@@ -35,8 +36,8 @@ def region_data():
   return ret_hash
 
 def master_data():
-  jmx=get_json("jmx")
-  tasks=get_json("master-status?format=json")
+  jmx=get_json("jmx",port=hbase_master_port)
+  tasks=get_json("master-status?format=json",port=hbase_master_port)
   region_bean=filter(lambda x: x['name']=='hadoop:service=Master,name=Master', jmx['beans'])[0]
   # count table regions
   # for every table region, create write requests, read requests
@@ -67,9 +68,11 @@ def master_data():
   return ret_hash
 
 
-def config(cluster_name,server_name,hbase_hostname,hbase_port):
+def config(cluster_name,server_name=os.popen('hostname -f').read().rstrip(),hbase_hostname='127.0.0.1',region_port=60030,master_port=60010):
   global hbase_region_port
-  hbase_region_port=hbase_port
+  hbase_region_port=region_port
+  global hbase_master_port
+  hbase_master_port=master_port
   global hbase_region_host
   hbase_region_host=hbase_hostname
   global hbase_cluster_name
