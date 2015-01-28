@@ -1,0 +1,14 @@
+[general]
+cluster=production
+#[master|region|both]
+mode=region
+transmitfrequency=5
+
+[statsd]
+host=127.0.0.1
+port=1234
+
+[hbase]
+host=127.0.0.1
+region_port=60030
+master_port=60010
