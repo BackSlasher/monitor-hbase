@@ -3,7 +3,6 @@
 import time
 import os
 import hbase
-#import statsd
 import ConfigParser
 import signal
 
@@ -15,12 +14,20 @@ def signal_handler(signal, frame):
 config = ConfigParser.RawConfigParser()
 config.read('client.cfg')
 
+use_statsd=config.getboolean('general','usestatsd')
+c=None
+if use_statsd:
+  import statsd
+  c = statsd.StatsClient(
+    config.get('statsd','host'),
+    config.getint('statsd','port'),
+    prefix='hbase.%s' % config.get('general','cluster'),
+    )
+
 # create statsd connection
-#c = statsd.StatsClient('localhost', 8125, prefix='foo')
 
 # connect to hbase
 hbase.config(
-  config.get('general','cluster'),
   os.popen('hostname -f').read().rstrip(),
   config.get('hbase','host'),
   config.getint('hbase','region_port'),
@@ -37,6 +44,12 @@ signal.signal(signal.SIGINT, signal_handler)
 
 while should_cont:
   # TODO replace to statsd
-  if use_region: print hbase.region_data()
-  if use_master: print hbase.master_data()
+  glob={}
+  if use_region: glob=dict(glob.items() +  hbase.region_data().items())
+  if use_master: glob=dict(glob.items() +  hbase.master_data().items())
+  if use_statsd:
+    for k in glob.keys():
+      c.gauge(k,glob[k])
+  else:
+    print glob
   if should_cont: time.sleep(freq)

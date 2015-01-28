@@ -3,6 +3,7 @@ cluster=production
 #[master|region|both]
 mode=region
 transmitfrequency=5
+usestatsd=false
 
 [statsd]
 host=127.0.0.1

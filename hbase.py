@@ -8,7 +8,6 @@ import urllib2
 hbase_region_port=None
 hbase_master_port=None
 hbase_host=None
-hbase_cluster_name=None
 hbase_server_name=None
 
 def get_json(path,port):
@@ -32,7 +31,7 @@ def region_data():
   }
   ret_hash={}
   for k in base_hash.keys():
-    ret_hash["hbase.%s.%s.%s" % (hbase_cluster_name,hbase_server_name.replace('.','-'),k)]=base_hash[k]
+    ret_hash["%s.%s" % (hbase_server_name.replace('.','-'),k)]=base_hash[k]
   return ret_hash
 
 def master_data():
@@ -42,8 +41,7 @@ def master_data():
   # count table regions
   # for every table region, create write requests, read requests
   region_count={}
-  base_hash = {
-  }
+  base_hash = {}
 
   for s in region_bean['RegionServers']:
     for r in s['value']['regionsLoad']:
@@ -64,18 +62,16 @@ def master_data():
 
   ret_hash={}
   for k in base_hash.keys():
-    ret_hash["hbase.%s.tables.%s" % (hbase_cluster_name,k)]=base_hash[k]
+    ret_hash["tables.%s" % k]=base_hash[k]
   return ret_hash
 
 
-def config(cluster_name,server_name=os.popen('hostname -f').read().rstrip(),hbase_hostname='127.0.0.1',region_port=60030,master_port=60010):
+def config(server_name=os.popen('hostname -f').read().rstrip(),hbase_hostname='127.0.0.1',region_port=60030,master_port=60010):
   global hbase_region_port
   hbase_region_port=region_port
   global hbase_master_port
   hbase_master_port=master_port
   global hbase_host
   hbase_host=hbase_hostname
-  global hbase_cluster_name
-  hbase_cluster_name=cluster_name
   global hbase_server_name
   hbase_server_name=server_name
