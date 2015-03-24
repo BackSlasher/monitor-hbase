@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 # Manages other scripts
 import time
