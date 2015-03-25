@@ -17,6 +17,8 @@ config.read('client.cfg')
 
 use_statsd=config.getboolean('general','usestatsd')
 c=None
+
+# create statsd connection
 if use_statsd:
   import statsd
   c = statsd.StatsClient(
@@ -24,8 +26,6 @@ if use_statsd:
     config.getint('statsd','port'),
     prefix='hbase.%s' % config.get('general','cluster'),
     )
-
-# create statsd connection
 
 # connect to hbase
 hbase.config(
