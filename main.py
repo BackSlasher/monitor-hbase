@@ -6,11 +6,18 @@ import os
 import hbase
 import ConfigParser
 import signal
+import logging
+import sys
 
 def signal_handler(signal, frame):
   print 'SIGINT, stopping'
   global should_cont
   should_cont=False
+
+logger = logging.getLogger("monitoring-hbase")
+h1 = logging.StreamHandler(sys.stderr)
+logger.addHandler(h1)
+logger = logging.getLogger("monitoring-hbase")
 
 config = ConfigParser.RawConfigParser()
 config.read('client.cfg')
@@ -20,6 +27,7 @@ c=None
 
 # create statsd connection
 if use_statsd:
+  logger.info("using StatsD: %s:%s" % (config.get('statsd','host'),config.getint('statsd','port')))
   import statsd
   c = statsd.StatsClient(
     config.get('statsd','host'),
@@ -28,6 +36,7 @@ if use_statsd:
     )
 
 # connect to hbase
+logger.info("using Hbase: %s with %s region and %s master" % (config.get('hbase','host'), config.getint('hbase','region_port'), config.getint('hbase','master_port')))
 hbase.config(
   os.popen('hostname -f').read().rstrip(),
   config.get('hbase','host'),
@@ -36,6 +45,7 @@ hbase.config(
   )
 
 mode=config.get('general','mode')
+logger.info("mode: %s" %(mode))
 use_region=(mode=='both') or (mode=='region')
 use_master=(mode=='both') or (mode=='master')
 freq=config.getint('general','transmitfrequency')
@@ -45,12 +55,14 @@ signal.signal(signal.SIGINT, signal_handler)
 
 while should_cont:
   # TODO replace to statsd
-  glob={}
-  if use_region: glob=dict(glob.items() +  hbase.region_data().items())
-  if use_master: glob=dict(glob.items() +  hbase.master_data().items())
-  if use_statsd:
-    for k in glob.keys():
-      c.gauge(k,glob[k])
-  else:
-    print glob
+  try:
+    glob={}
+    if use_region: glob=dict(glob.items() +  hbase.region_data().items())
+    if use_master: glob=dict(glob.items() +  hbase.master_data().items())
+    if use_statsd:
+      for k in glob.keys():
+        c.gauge(k,glob[k])
+    logger.info("Reporting %s" %(glob))
+  except:
+    logger.error("Unexpected error: %s" % (sys.exc_info()[0]))
   if should_cont: time.sleep(freq)
