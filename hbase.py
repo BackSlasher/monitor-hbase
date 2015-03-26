@@ -46,7 +46,7 @@ def master_data():
   for s in region_bean['RegionServers']:
     for r in s['value']['regionsLoad']:
       v=r['value']
-      rawname=v['nameAsString'].split(',')
+      rawname=v['nameAsString'].encode('unicode-escape').split(',')
       tbl=rawname[0]
       reg=rawname[2].rstrip('.').replace('.','-')
       # increase region count
