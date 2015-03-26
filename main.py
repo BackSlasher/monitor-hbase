@@ -61,5 +61,5 @@ while should_cont:
         c.gauge(k,glob[k])
     logging.info("Reporting %s" %(glob))
   except Exception as e:
-    logging.error("Unexpected error: %s" % e)
+    logging.exception("")
   if should_cont: time.sleep(freq)
