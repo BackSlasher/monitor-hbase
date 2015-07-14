@@ -51,7 +51,6 @@ should_cont=True
 signal.signal(signal.SIGINT, signal_handler)
 
 while should_cont:
-  # TODO replace to statsd
   try:
     glob={}
     if use_region: glob=dict(glob.items() +  hbase.region_data().items())
