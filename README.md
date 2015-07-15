@@ -25,7 +25,7 @@ Assuming table "TABLENAME" and region "REGIONNAME"
 
 
 **Region servers**  
-Assuming server name (defaults to `hostname`) "SERVERNAME"
+Assuming server name (defaults to server FQDN with `.` replaced to `-`) "SERVERNAME"
 
 * `CLUSTERNAME.SERVERNAME.compactionQueueSize`
 * `CLUSTERNAME.SERVERNAME.flushQueueSize`
@@ -33,3 +33,6 @@ Assuming server name (defaults to `hostname`) "SERVERNAME"
 * `CLUSTERNAME.SERVERNAME.regionCount`
 * `CLUSTERNAME.SERVERNAME.running-tasks`
 * `CLUSTERNAME.SERVERNAME.writeRequestsCount`
+
+## Finding it in Graphite
+Because I'm using StatsD, the metric `CLUSTERNAME.SERVERNAME.compactionQueueSize` can be found as `stats.gauges.hbase.CLUSTERNAME.SERVERNAME.compactionQueueSize`.
