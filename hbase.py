@@ -13,7 +13,20 @@ hbase_server_name=None
 def get_json(path,port):
   return json.loads(urllib2.urlopen(("http://%s:%s/%s" % (hbase_host,port,path))).read())
 
+# http://stackoverflow.com/a/20768199
+def to_unsigned(original,bits=32):
+    if original >= 0:
+        return original
+    else:
+        return (original + 2**bits)
 
+# Calculate current value. Take into account the possibility of overflow
+# by using "unsigned" 32bit integers
+def curr_rate(prev_value,curr_value):
+    to_unsigned(curr_value) - to_unsigned(prev_value)
+
+prev_server_read=None
+prev_server_write=None
 def region_data():
   jmx=get_json("jmx",port=hbase_region_port)
   tasks=get_json("rs-status?format=json",port=hbase_region_port)
@@ -21,12 +34,26 @@ def region_data():
   # TODO remove?
   region_bean=filter(lambda x: x['name']=='hadoop:service=RegionServer,name=RegionServerDynamicStatistics', jmx['beans'])[0];
 
+  global prev_server_read
+  read_rate=None
+  curr_server_read = server_bean['readRequestsCount']
+  if prev_server_read is not None:
+      read_rate = curr_rate(prev_server_read, curr_server_read)
+  prev_server_read = curr_server_read
+
+  global prev_server_write
+  write_rate=None
+  curr_server_write = server_bean['readRequestsCount']
+  if prev_server_write is not None:
+      write_rate = curr_rate(prev_server_write, curr_server_write)
+  prev_server_write = curr_server_write
+
   base_hash = {
     'running-tasks': len(filter(lambda x: x['state']=='RUNNING',tasks)),
     'compactionQueueSize': server_bean['compactionQueueSize'],
     'flushQueueSize': server_bean['flushQueueSize'],
-    'readReqeustsCount': server_bean['readRequestsCount'],
-    'writeRequestsCount': server_bean['writeRequestsCount'],
+    'readRate': read_rate,
+    'writeRate': write_rate,
     'regionCount': server_bean['regions'],
   }
   ret_hash={}
@@ -34,6 +61,9 @@ def region_data():
     ret_hash["%s.%s" % (hbase_server_name.replace('.','-'),k)]=base_hash[k]
   return ret_hash
 
+
+prev_region_read={}
+prev_region_write={}
 def master_data():
   jmx=get_json("jmx",port=hbase_master_port)
   tasks=get_json("master-status?format=json",port=hbase_master_port)
@@ -42,6 +72,7 @@ def master_data():
   # for every table region, create write requests, read requests
   region_count={}
   base_hash = {}
+
 
   for s in region_bean['RegionServers']:
     for r in s['value']['regionsLoad']:
@@ -55,8 +86,22 @@ def master_data():
       else:
         region_count[tbl]=1
       # generate region stub
-      base_hash['%s.%s.readrequestcount' % (tbl,reg)]=v['readRequestsCount']
-      base_hash['%s.%s.writerequestcount' % (tbl,reg)]=v['writeRequestsCount']
+      region_name='%s.%s.readrequestcount' % (tbl,reg)
+
+      global prev_region_read
+      read_rate=None
+      curr_read=v['readRequestsCount']
+      if region_name in prev_region.keys():
+          read_rate=curr_rate(curr_read, prev_region[region_name])
+      base_hash['%s.readRate' % region_name]=read_rate
+
+      global prev_region_write
+      write_rate=None
+      curr_write=v['writeRequestsCount']
+      if region_name in prev_region.keys():
+          write_rate=curr_rate(curr_write, prev_region[region_name])
+      base_hash['%s.writeRate' % region_name]=write_rate
+
   for t in region_count.keys():
     base_hash['%s.regioncount' % 't']=region_count[t]
 
