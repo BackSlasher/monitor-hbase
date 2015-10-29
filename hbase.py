@@ -3,6 +3,7 @@
 import os
 import json
 import urllib2
+import contextlib
 
 
 hbase_region_port=None
@@ -11,7 +12,9 @@ hbase_host=None
 hbase_server_name=None
 
 def get_json(path,port):
-  return json.loads(urllib2.urlopen(("http://%s:%s/%s" % (hbase_host,port,path))).read())
+  url = "http://%s:%s/%s" % (hbase_host,port,path)
+  with contextlib.closing(urllib2.urlopen(url)) as x:
+      return json.loads(x.read())
 
 # http://stackoverflow.com/a/20768199
 def to_unsigned(original,bits=32):
