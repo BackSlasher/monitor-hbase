@@ -96,7 +96,7 @@ def master_data():
       curr_read=v['readRequestsCount']
       if region_name in prev_region_read.keys():
           read_rate=curr_rate(curr_read, prev_region_read[region_name])
-      prev_region_read['region_name']=curr_read
+      prev_region_read[region_name]=curr_read
       base_hash['%s.readRate' % region_name]=read_rate
 
       global prev_region_write
@@ -104,7 +104,7 @@ def master_data():
       curr_write=v['writeRequestsCount']
       if region_name in prev_region_write.keys():
           write_rate=curr_rate(curr_write, prev_region_write[region_name])
-      prev_region_write['region_name']=curr_write
+      prev_region_write[region_name]=curr_write
       base_hash['%s.writeRate' % region_name]=write_rate
 
   for t in region_count.keys():
