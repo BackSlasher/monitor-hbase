@@ -89,7 +89,7 @@ def master_data():
       else:
         region_count[tbl]=1
       # generate region stub
-      region_name='%s.%s.readrequestcount' % (tbl,reg)
+      region_name='%s.%s' % (tbl,reg)
 
       global prev_region_read
       read_rate=None
