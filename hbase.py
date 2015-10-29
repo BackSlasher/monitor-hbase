@@ -23,7 +23,7 @@ def to_unsigned(original,bits=32):
 # Calculate current value. Take into account the possibility of overflow
 # by using "unsigned" 32bit integers
 def curr_rate(prev_value,curr_value):
-    to_unsigned(curr_value) - to_unsigned(prev_value)
+    return to_unsigned(curr_value) - to_unsigned(prev_value)
 
 prev_server_read=None
 prev_server_write=None
