@@ -43,7 +43,7 @@ def region_data():
 
   global prev_server_write
   write_rate=None
-  curr_server_write = server_bean['readRequestsCount']
+  curr_server_write = server_bean['writeRequestsCount']
   if prev_server_write is not None:
       write_rate = curr_rate(prev_server_write, curr_server_write)
   prev_server_write = curr_server_write
