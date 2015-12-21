@@ -20,8 +20,8 @@ Assuming cluster name (defined in `client.cfg`) "CLUSTERNAME"
 Assuming table "TABLENAME" and region "REGIONNAME"
 
 * `CLUSTERNAME.tables.TABLENAME.regioncount`
-* `CLUSTERNAME.tables.TABLENAME.REGIONNAME.readrequestcount`
-* `CLUSTERNAME.tables.TABLENAME.REGIONNAME.writerequestcount`
+* `CLUSTERNAME.tables.TABLENAME.REGIONNAME.readRate`
+* `CLUSTERNAME.tables.TABLENAME.REGIONNAME.writeRate`
 
 
 **Region servers**  
@@ -32,7 +32,8 @@ Assuming server name (defaults to server FQDN with `.` replaced to `-`) "SERVERN
 * `CLUSTERNAME.SERVERNAME.readReqeustsCount`
 * `CLUSTERNAME.SERVERNAME.regionCount`
 * `CLUSTERNAME.SERVERNAME.running-tasks`
-* `CLUSTERNAME.SERVERNAME.writeRequestsCount`
+* `CLUSTERNAME.SERVERNAME.readRate`
+* `CLUSTERNAME.SERVERNAME.writeRate`
 
 ## Finding it in Graphite
 Because I'm using StatsD, the metric `CLUSTERNAME.SERVERNAME.compactionQueueSize` can be found as `stats.gauges.hbase.CLUSTERNAME.SERVERNAME.compactionQueueSize`.
